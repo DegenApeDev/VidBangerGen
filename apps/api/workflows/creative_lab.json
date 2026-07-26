@@ -1,0 +1,327 @@
+{
+  "version": "ltx-2.3-creative-lab-2026-07-22",
+  "collection_url": "https://huggingface.co/collections/Lightricks/ltx-23-creative-lab",
+  "server_policy": "inference-only; shared model and node installation requires worker owner approval",
+  "audio_strategy": {
+    "default": "ambient",
+    "default_contract": "Synchronized ambience and Foley with visual-prompt speech stripped and speech/gibberish negatives",
+    "native_dialogue": "Short, single-speaker, exact quoted lines only",
+    "reliable_long_form": "Generate visuals silently, then mix an uploaded voiceover during local export",
+    "speech_budget_words_per_second": 2.5
+  },
+  "modes": [
+    {
+      "id": "ingredients",
+      "name": "Visual Bible (Ingredients)",
+      "category": "consistency",
+      "input_kind": "reference sheet + prompt",
+      "status": "active",
+      "required_capabilities": ["creative_lab_ingredients"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Ingredients",
+      "model_file": "ltx-2.3-22b-ic-lora-ingredients-0.9.safetensors",
+      "purpose": "Carry recurring character, prop, product, logo, and location identity from a composite reference sheet into a shot.",
+      "recommended": {
+        "width": 768,
+        "height": 448,
+        "frames": 121,
+        "fps": 24,
+        "steps": 30,
+        "guidance": 4.0,
+        "lora_strength": 1.4,
+        "prompt_sections": ["Reference sheet", "Generated video"]
+      },
+      "limitations": [
+        "Requires a reference sheet supplied as a static video of at least 121 frames.",
+        "Other resolutions and substantially longer clips are outside the documented training bucket."
+      ]
+    },
+    {
+      "id": "in-outpainting",
+      "name": "Video Inpainting & Outpainting",
+      "category": "edit",
+      "input_kind": "source video + mask",
+      "status": "active",
+      "required_capabilities": ["creative_lab_in_outpainting"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-In-Outpainting",
+      "model_file": "ltx-2.3-22b-ic-lora-in-outpainting-0.9.safetensors",
+      "purpose": "Remove or replace masked subjects and objects, or extend the canvas beyond the source frame while preserving surrounding motion.",
+      "workflow_urls": {
+        "inpaint": "https://github.com/Lightricks/ComfyUI-LTXVideo/blob/master/example_workflows/2.3/LTX-2.3_ICLoRA_Inpaint_Two_Stage_Distilled.json",
+        "outpaint": "https://github.com/Lightricks/ComfyUI-LTXVideo/blob/master/example_workflows/2.3/LTX-2.3_ICLoRA_Outpaint_Two_Stage_Distilled.json"
+      },
+      "recommended": {
+        "frames": "8n+1, up to 121 on the current route",
+        "stage_one_steps": 8,
+        "stage_two_steps": 2,
+        "guidance": 1.0,
+        "lora_strength": 1.0,
+        "mask_dilation": 15
+      },
+      "limitations": [
+        "A static mask must match the source pixel dimensions; an animated mask must also match its frame count.",
+        "Describe only the generated masked or outpainted region. Include shadows, reflections, and contact areas in removal masks.",
+        "The 24 GB route is limited to 121 frames and a 1024-pixel delivery edge per pass."
+      ]
+    },
+    {
+      "id": "pixel-spatial-upscaler",
+      "name": "Creative Spatial Upscaler",
+      "category": "upscale",
+      "input_kind": "approved source video",
+      "status": "active",
+      "required_capabilities": ["creative_lab_pixel_spatial_upscaler"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Pixel-Spatial-Upscaler",
+      "workflow_url": "https://github.com/Lightricks/ComfyUI-LTXVideo/blob/master/example_workflows/2.3/LTX-2.3_ICLoRA_Pixel_Spatial_Upscaler_Distilled.json",
+      "model_files": {
+        "2x": "ltx-2.3-22b-ic-lora-pixel-spatial-upscaler-x2-0.9.safetensors",
+        "4x": "ltx-2.3-22b-ic-lora-pixel-spatial-upscaler-x4-0.9.safetensors"
+      },
+      "purpose": "Re-render an approved low-resolution clip at 2x or 4x resolution with synthesized LTX detail.",
+      "limitations": [
+        "This is a generative upscaler, not a pixel-faithful refiner.",
+        "It is an explicit post-process and never replaces the stable generation graph.",
+        "The 24 GB worker route is capped to a 1536-pixel long edge and 121 frames per pass."
+      ]
+    },
+    {
+      "id": "water-simulation",
+      "name": "Water Simulation",
+      "category": "vfx",
+      "input_kind": "source video + prompt",
+      "status": "active",
+      "required_capabilities": ["creative_lab_water_simulation"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Water-Simulation",
+      "model_file": "ltx-2.3-22b-ic-lora-water-simulation-0.9.safetensors",
+      "purpose": "Add reference-conditioned water behavior and fluid effects to an existing shot.",
+      "recommended": {
+        "fps": 24,
+        "frames": "8n+1, up to 121 on the current route",
+        "steps": 8,
+        "guidance": 1.0,
+        "lora_strength": 1.2,
+        "trigger": "ADD WATER"
+      },
+      "limitations": [
+        "Requires a dry 24 fps source clip and a concrete description of water motion and interaction.",
+        "Runs stage one only; source audio is discarded because it cannot contain the newly added water sounds. Apply Foley V2A afterward for a matched soundtrack."
+      ]
+    },
+    {
+      "id": "deblur",
+      "name": "Video Deblur",
+      "category": "restore",
+      "input_kind": "out-of-focus source video",
+      "status": "active",
+      "required_capabilities": ["creative_lab_deblur"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Deblur",
+      "model_file": "ltx-2.3-22b-ic-lora-deblur-0.9.safetensors",
+      "purpose": "Regenerate an out-of-focus clip with sharper detail while retaining subject, framing, motion, and scene geometry.",
+      "limitations": ["It targets defocus blur; compression damage and low source resolution require different tools."]
+    },
+    {
+      "id": "decompression",
+      "name": "Video Decompression",
+      "category": "restore",
+      "input_kind": "compressed source video",
+      "status": "active",
+      "required_capabilities": ["creative_lab_decompression"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Decompression",
+      "model_file": "ltx-2.3-22b-ic-lora-decompression-0.9.safetensors",
+      "purpose": "Remove macroblocking, ringing, chroma bleed, and banding from heavily compressed video.",
+      "limitations": ["It does not replace deblur, denoise, or spatial upscaling and should remain a stage-one identity-preserving edit."]
+    },
+    {
+      "id": "cross-eyed",
+      "name": "Cross-Eyed Character Effect",
+      "category": "character",
+      "input_kind": "close-up source video + optional prompt",
+      "status": "active",
+      "required_capabilities": ["creative_lab_cross_eyed"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Cross-Eyed",
+      "model_file": "ltx-2.3-22b-ic-lora-cross-eyed-0.9.safetensors",
+      "purpose": "Apply the collection's deliberately cross-eyed facial-performance effect for stylized or comedic shots.",
+      "recommended": {
+        "frames": "8n+1, trained at 49",
+        "steps": 30,
+        "guidance": 4.0,
+        "stg_scale": 1.0,
+        "stg_blocks": [29],
+        "lora_strength": 1.0
+      },
+      "limitations": [
+        "The active Studio route is reference-video-to-video and works best on a close-up portrait with straight eyes.",
+        "Use only when the operator explicitly wants this character effect; it is never part of normal generation."
+      ]
+    },
+    {
+      "id": "instant-shave",
+      "name": "Instant Shave",
+      "category": "character",
+      "input_kind": "source video",
+      "status": "active",
+      "required_capabilities": ["creative_lab_instant_shave"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Instant-Shave",
+      "model_file": "ltx-2.3-22b-ic-lora-instant-shave-0.9.safetensors",
+      "purpose": "Remove beard, mustache, and stubble while preserving identity, expression, lighting, motion, and the surrounding scene.",
+      "recommended": {
+        "fps": 25,
+        "frames": "49-121",
+        "steps": 30,
+        "guidance": 4.0,
+        "stg_scale": 1.0,
+        "stg_blocks": [29],
+        "lora_strength": 1.0,
+        "trigger": "REMOVEBEARD"
+      },
+      "limitations": [
+        "Designed for facial-hair removal, not general face replacement or beauty retouching.",
+        "25 fps is the recommended training bucket; the current route accepts clips up to 121 frames."
+      ]
+    },
+    {
+      "id": "colorization",
+      "name": "Video Colorization",
+      "category": "restore",
+      "input_kind": "monochrome source video",
+      "status": "active",
+      "required_capabilities": ["creative_lab_colorization"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Colorization",
+      "model_file": "ltx-2.3-22b-ic-lora-colorization-0.9.safetensors",
+      "purpose": "Colorize monochrome footage with prompt-directed hues while preserving the source composition and motion.",
+      "limitations": ["High-resolution sources may need preparation near the documented training bucket to avoid weak color or bleeding."]
+    },
+    {
+      "id": "day-to-night",
+      "name": "Day to Night",
+      "category": "relight",
+      "input_kind": "daytime source video",
+      "status": "active",
+      "required_capabilities": ["creative_lab_day_to_night"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Day-To-Night",
+      "model_file": "ltx-2.3-22b-ic-lora-day-to-night-0.9.safetensors",
+      "purpose": "Relight a daytime shot into a coherent night scene while retaining composition, camera movement, and subject motion.",
+      "limitations": ["Prompts must describe the desired night lighting rather than changing scene content."]
+    },
+    {
+      "id": "cinemagraph",
+      "name": "Cinemagraph",
+      "category": "motion",
+      "input_kind": "source image + prompt",
+      "status": "active",
+      "required_capabilities": ["creative_lab_cinemagraph"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-LoRA-Cinemagraph",
+      "model_file": "ltx-2.3-22b-lora-cinemagraph-0.9.safetensors",
+      "purpose": "Turn a still image into a restrained looping shot where selected details move and the rest of the composition stays stable.",
+      "recommended": {
+        "resolution": "512x704 portrait or 704x512 landscape",
+        "frames": 25,
+        "fps": 25,
+        "steps": 30,
+        "guidance": 4.0,
+        "stg_scale": 1.0,
+        "stg_blocks": [29],
+        "lora_strength": "0.7-3.0",
+        "trigger": "CINEMAGRAPH_MOTION"
+      },
+      "limitations": [
+        "Designed for a locked-off camera and exactly described selective motion; people and the rest of the composition should remain frozen.",
+        "The source image is center-cropped to the nearest documented training orientation and the delivered 25-frame clip is structurally silent."
+      ]
+    },
+    {
+      "id": "foley-v2a",
+      "name": "Foley Video-to-Audio",
+      "category": "audio",
+      "input_kind": "silent source video",
+      "status": "active",
+      "required_capabilities": ["creative_lab_foley_v2a"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-LoRA-Foley-V2A",
+      "model_file": "ltx-2.3-22b-lora-foley-v2a-1.0.safetensors",
+      "purpose": "Generate synchronized environmental sound and Foley for an approved silent or weak-audio clip.",
+      "recommended": {
+        "frames": 89,
+        "fps": 24,
+        "steps": 30,
+        "guidance": 6.0,
+        "stg_scale": 1.0,
+        "stg_blocks": [29],
+        "lora_strength": "0.8-1.0"
+      },
+      "limitations": [
+        "The current 24 GB route accepts up to 121 frames per pass.",
+        "Foley is non-speech and non-music; it replaces the source soundtrack while preserving source video frames."
+      ]
+    },
+    {
+      "id": "clean-plate",
+      "name": "Clean Plate",
+      "category": "edit",
+      "input_kind": "source video + clean-result prompt",
+      "status": "active",
+      "required_capabilities": ["creative_lab_clean_plate"],
+      "collection_member": true,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Clean-Plate",
+      "model_file": "ltx-2.3-22b-ic-lora-clean-plate-1.0.safetensors",
+      "purpose": "Remove people or unwanted foreground objects and reconstruct the empty background plate across time.",
+      "limitations": ["The prompt should describe the desired empty scene; difficult occluders also need explicit negative constraints."]
+    }
+  ],
+  "companion_modes": [
+    {
+      "id": "lipdub",
+      "name": "LipDub Speech Replacement",
+      "category": "audio",
+      "input_kind": "one-speaker source video with speech + exact dialogue text",
+      "status": "active",
+      "required_capabilities": ["creative_lab_lipdub"],
+      "collection_member": false,
+      "gated": true,
+      "model_url": "https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-LipDub",
+      "workflow_url": "https://github.com/Lightricks/ComfyUI-LTXVideo/blob/master/example_workflows/2.3/LTX-2.3_ICLoRA_Lipdub_Two_Stage_Distilled.json",
+      "model_file": "ltx-2.3-22b-ic-lora-lipdub-0.9.safetensors",
+      "purpose": "Dub or rephrase one visible speaker by regenerating lip motion and audio for exact operator-authored dialogue while retaining speaker identity from the source voice.",
+      "recommended": {
+        "source_fps": 24,
+        "frames": "8n+1, 17-121 on the current 24 GB route",
+        "base_resolution": "768x448 landscape or 448x768 portrait",
+        "stage_one_steps": 8,
+        "stage_two_steps": 3,
+        "guidance": 1.0,
+        "lora_strength": 1.0,
+        "reference_downscale_factor": 1,
+        "speaker_count": 1
+      },
+      "limitations": [
+        "This is an LTX 2.3 companion model, not one of the current Creative Lab collection entries.",
+        "Use one visible speaker and a source clip that contains that speaker's voice; the source audio supplies identity reference tokens.",
+        "Enter the final desired words in the target language's native script; the model does not translate automatically.",
+        "For the best audio, keep the replacement line close to the timing and length of the original speech."
+      ]
+    }
+  ]
+}

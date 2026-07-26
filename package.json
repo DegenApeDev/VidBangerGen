@@ -1,0 +1,31 @@
+{
+  "name": "vidbangergen",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DegenApeDev/VidBangerGen.git"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "setup": "python3 scripts/setup.py setup",
+    "doctor": "python3 scripts/setup.py doctor",
+    "predev": "python3 scripts/setup.py first-run --no-install",
+    "predev:api": "python3 scripts/setup.py first-run --no-install",
+    "dev:api": ".venv/bin/uvicorn apps.api.main:app --port 8090",
+    "dev:api:reload": ".venv/bin/uvicorn apps.api.main:app --reload --port 8090",
+    "preserve:api": "python3 scripts/setup.py first-run --no-install",
+    "serve:api": ".venv/bin/uvicorn apps.api.main:app --port 8090",
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "build": "npm --prefix apps/web run build",
+    "test": ".venv/bin/python -m pytest -q"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

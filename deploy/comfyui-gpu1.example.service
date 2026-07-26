@@ -1,0 +1,18 @@
+[Unit]
+Description=Example ComfyUI LTX worker on GPU 1 and port 8189
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vidbangergen
+Group=vidbangergen
+WorkingDirectory=/opt/ComfyUI
+ExecStartPre=/usr/bin/install -d -m 0750 -o vidbangergen -g vidbangergen /var/lib/vidbangergen/comfyui-input-gpu1 /var/lib/vidbangergen/comfyui-output-gpu1 /var/lib/vidbangergen/comfyui-user-gpu1
+ExecStart=/opt/ComfyUI/.venv/bin/python /opt/ComfyUI/main.py --listen 127.0.0.1 --port 8189 --cuda-device 1 --input-directory /var/lib/vidbangergen/comfyui-input-gpu1 --output-directory /var/lib/vidbangergen/comfyui-output-gpu1 --user-directory /var/lib/vidbangergen/comfyui-user-gpu1
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

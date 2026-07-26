@@ -1,0 +1,198 @@
+{
+  "version": "ltx-2.3-portable-v1",
+  "available_capabilities": [
+    "audio_video_time_mask",
+    "motion_segment_guide",
+    "creative_lab_pixel_spatial_upscaler",
+    "creative_lab_day_to_night",
+    "creative_lab_ingredients",
+    "creative_lab_deblur",
+    "creative_lab_decompression",
+    "creative_lab_colorization",
+    "creative_lab_clean_plate",
+    "creative_lab_foley_v2a",
+    "creative_lab_water_simulation",
+    "creative_lab_instant_shave",
+    "creative_lab_cross_eyed",
+    "creative_lab_cinemagraph",
+    "creative_lab_in_outpainting",
+    "creative_lab_lipdub"
+  ],
+  "source": {
+    "kind": "file",
+    "path": "ltx23_base_graph.json"
+  },
+  "nodes": {
+    "latent": {"id": "3059", "class_type": "EmptyLTXVLatentVideo"},
+    "frames": {"id": "4988", "class_type": "PrimitiveInt"},
+    "fps": {"id": "4989", "class_type": "PrimitiveFloat"},
+    "positive_gemma": {"id": "4980", "class_type": "GemmaAPITextEncode"},
+    "positive_clip": {"id": "2483", "class_type": "CLIPTextEncode"},
+    "negative_gemma": {"id": "4981", "class_type": "GemmaAPITextEncode", "optional": true},
+    "negative_clip": {"id": "2612", "class_type": "CLIPTextEncode"},
+    "seed_stage_one": {"id": "4832", "class_type": "RandomNoise"},
+    "seed_stage_two": {"id": "4967", "class_type": "RandomNoise"},
+    "motion_sigmas": {"id": "4984", "class_type": "ManualSigmas"},
+    "upscale_sigmas": {"id": "4985", "class_type": "ManualSigmas"},
+    "image": {"id": "2004", "class_type": "LoadImage"},
+    "image_resize": {"id": "4990", "class_type": "ResizeImageMaskNode"},
+    "image_preprocess": {"id": "3336", "class_type": "LTXVPreprocess"},
+    "image_bypass": {"id": "4987", "class_type": "PrimitiveBoolean"},
+    "image_condition_stage_one": {"id": "3159", "class_type": "LTXVImgToVideoConditionOnly"},
+    "image_condition_stage_two": {"id": "4970", "class_type": "LTXVImgToVideoConditionOnly"},
+    "model": {"id": "3940", "class_type": "UnetLoaderGGUF"},
+    "guider_stage_one": {"id": "4828", "class_type": "CFGGuider"},
+    "guider_stage_two": {"id": "4964", "class_type": "CFGGuider"},
+    "conditioning": {"id": "1241", "class_type": "LTXVConditioning"},
+    "av_concat_stage_one": {"id": "4528", "class_type": "LTXVConcatAVLatent"},
+    "av_concat_stage_two": {"id": "4969", "class_type": "LTXVConcatAVLatent"},
+    "latent_upsampler": {"id": "4975", "class_type": "LTXVLatentUpsampler"},
+    "sampler_stage_one": {"id": "4829", "class_type": "SamplerCustomAdvanced"},
+    "separate_stage_one": {"id": "4845", "class_type": "LTXVSeparateAVLatent"},
+    "separate_stage_two": {"id": "4973", "class_type": "LTXVSeparateAVLatent"},
+    "video_decode": {"id": "4995", "class_type": "LTXVTiledVAEDecode"},
+    "audio_vae": {"id": "4010", "class_type": "LTXVAudioVAELoader"},
+    "video_vae": {"id": "90100", "class_type": "VAELoader"},
+    "create_video": {"id": "4849", "class_type": "CreateVideo"},
+    "output": {"id": "4852", "class_type": "SaveVideo"}
+  },
+  "ic_lora": {
+    "class_type": "LTXICLoRALoaderModelOnly",
+    "name": "ltx-2.3-22b-ic-lora-union-control-ref0.5.safetensors"
+  },
+  "constraints": {
+    "frame_modulus": 8,
+    "frame_offset": 1,
+    "default_fps": 24.0,
+    "spatial_upscale": 2
+  },
+  "profiles": {
+    "motion-draft-4x3": {
+      "model_loader": {"kind": "workflow-default", "required_capability": null},
+      "motion": {
+        "steps": 4,
+        "sigmas": "1.0, 0.975, 0.725, 0.421875, 0.0"
+      },
+      "latent_upscale": {
+        "steps": 3,
+        "sigmas": "0.85, 0.7250, 0.4219, 0.0",
+        "factor": 2
+      },
+      "refinement": {"steps": 0, "required_capability": null},
+      "final_upscale": {"kind": "none"},
+      "encoder": {"kind": "builtin", "crf": null},
+      "audio_seed": {
+        "kind": "LTXVSetAudioVideoMaskByTime",
+        "default_seconds": 4.0,
+        "max_seconds": 10.0,
+        "required_capability": "audio_video_time_mask",
+        "required_when_used": true
+      }
+    },
+    "quality-final-gguf-4x3": {
+      "model_loader": {
+        "kind": "workflow-default-gguf-q4-k-m",
+        "required_capability": null
+      },
+      "motion": {
+        "steps": 4,
+        "sigmas": "1.0, 0.975, 0.725, 0.421875, 0.0"
+      },
+      "latent_upscale": {
+        "steps": 3,
+        "sigmas": "0.85, 0.7250, 0.4219, 0.0",
+        "factor": 2
+      },
+      "refinement": {"steps": 0, "required_capability": null},
+      "final_upscale": {"kind": "none"},
+      "encoder": {"kind": "builtin", "crf": null},
+      "audio_seed": {
+        "kind": "LTXVSetAudioVideoMaskByTime",
+        "default_seconds": 4.0,
+        "max_seconds": 10.0,
+        "required_capability": "audio_video_time_mask",
+        "required_when_used": true
+      }
+    },
+    "quality-final-fp8-4x3": {
+      "model_loader": {
+        "kind": "fp8-distorch2-dual-cuda",
+        "class_type": "CheckpointLoaderSimpleDisTorch2MultiGPU",
+        "exclusive_dual_gpu": true,
+        "inputs": {
+          "ckpt_name": "ltx-2.3-22b-distilled-fp8.safetensors",
+          "compute_device": "cuda:0",
+          "virtual_vram_gb": 8.0,
+          "donor_device": "cuda:1",
+          "expert_mode_allocations": "",
+          "eject_models": true
+        },
+        "required_capability": "fp8_exclusive_inference",
+        "status": "requires_idle_dual_gpu_scheduler_acceptance"
+      },
+      "motion": {
+        "steps": 4,
+        "sigmas": "1.0, 0.975, 0.725, 0.421875, 0.0"
+      },
+      "latent_upscale": {
+        "steps": 3,
+        "sigmas": "0.85, 0.7250, 0.4219, 0.0",
+        "factor": 2
+      },
+      "refinement": {"steps": 0, "required_capability": null},
+      "final_upscale": {"kind": "none"},
+      "encoder": {"kind": "builtin", "crf": null},
+      "audio_seed": {
+        "kind": "LTXVSetAudioVideoMaskByTime",
+        "default_seconds": 4.0,
+        "max_seconds": 10.0,
+        "required_capability": "audio_video_time_mask",
+        "required_when_used": true
+      }
+    },
+    "production-4x3x1-vssr": {
+      "model_loader": {
+        "kind": "workflow-default-gguf-q4-k-m",
+        "required_capability": null
+      },
+      "motion": {
+        "steps": 4,
+        "sigmas": "1.0, 0.975, 0.725, 0.421875, 0.0"
+      },
+      "latent_upscale": {
+        "steps": 3,
+        "sigmas": "0.85, 0.7250, 0.4219, 0.0",
+        "factor": 2
+      },
+      "refinement": {
+        "steps": 1,
+        "required_capability": "ltx_refinement_stage",
+        "status": "requires_worker_workflow_upgrade"
+      },
+      "final_upscale": {
+        "kind": "rtx_vssr",
+        "target_width": 1920,
+        "target_height": 440,
+        "dimension_confirmation_required": true,
+        "required_capability": "rtx_vssr",
+        "status": "requires_worker_node_install"
+      },
+      "encoder": {
+        "kind": "VHS_VideoCombine",
+        "format": "video/h264-mp4",
+        "pix_fmt": "yuv420p",
+        "crf": 16,
+        "required_capability": "vhs_video_combine",
+        "status": "requires_worker_node_install"
+      },
+      "audio_seed": {
+        "kind": "LTXVSetAudioVideoMaskByTime",
+        "default_seconds": 4.0,
+        "max_seconds": 10.0,
+        "required_capability": "audio_video_time_mask",
+        "required_when_used": true,
+        "status": "node_available_workflow_wiring_required"
+      }
+    }
+  }
+}

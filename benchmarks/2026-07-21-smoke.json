@@ -1,0 +1,134 @@
+{
+  "date": "2026-07-21",
+  "rig": "private dual-worker integration rig",
+  "worker": "worker-a.example.invalid",
+  "model": "ltx-2.3-22b-distilled-1.1-Q4_K_M.gguf",
+  "purpose": "Technical integration smoke tests only; these short, low-resolution renders are not visual-quality benchmarks.",
+  "quality_claims": false,
+  "tests": [
+    {
+      "name": "motion-first-4-plus-3",
+      "seed": 230723,
+      "input_resolution": [256, 256],
+      "output_resolution": [512, 512],
+      "frames": 25,
+      "fps": 24,
+      "duration_seconds": 1.041667,
+      "elapsed_seconds": 179.22,
+      "motion_steps": 4,
+      "upscale_steps": 3,
+      "video_codec": "h264",
+      "audio_codec": "aac",
+      "result": "passed",
+      "observations": [
+        "Strong readable wing motion and stable flower composition",
+        "Primary subject anatomy drifted toward a dolphin-like bird, validating best-of-N subject scoring"
+      ]
+    },
+    {
+      "name": "masked-reference-audio",
+      "seed": 230725,
+      "input_resolution": [256, 448],
+      "output_resolution": [512, 896],
+      "frames": 73,
+      "fps": 24,
+      "duration_seconds": 3.041667,
+      "elapsed_seconds": 90.425,
+      "reference_audio_seconds": 1.0,
+      "generated_audio_interval_seconds": [1.0, 3.041667],
+      "mask_node": "LTXVSetAudioVideoMaskByTime",
+      "technical_qc": {
+        "valid": true,
+        "audio_stream": true,
+        "black_seconds": 0,
+        "frozen_segments": 0
+      },
+      "delivery_export": {
+        "resolution": [1280, 720],
+        "frames": 121,
+        "video_codec": "h264",
+        "video_crf": 16,
+        "video_encode_passes": 1,
+        "audio_codec": "aac",
+        "audio_sample_rate": 48000,
+        "audio_channels": 2,
+        "captions_burned": true
+      },
+      "result": "passed",
+      "observations": [
+        "Reference interval preservation and generated remainder are recorded in workflow metadata",
+        "Visual primary subject became a humanoid puppet instead of the required brushed-steel robot; scorer rubric was hardened after this finding"
+      ]
+    },
+    {
+      "name": "motion-tail-guide-crop-and-chain-merge",
+      "seed": 230730,
+      "input_resolution": [256, 256],
+      "output_resolution": [512, 512],
+      "requested_frames": 25,
+      "actual_frames": 25,
+      "fps": 24,
+      "duration_seconds": 1.041667,
+      "elapsed_seconds": 54.6,
+      "guide_frames": 17,
+      "guide_crop_stage": "post_av_separation_pre_upscale",
+      "merged_chain_duration_seconds": 8.083,
+      "result": "passed",
+      "observations": [
+        "LTXVAddGuide tokens are removed before the latent upscaler, preventing a 25-frame continuation from becoming 49 frames",
+        "Drone shape and red-beam identity remain coherent across the diagnostic clip",
+        "Overlap-aware H.264 CRF 14 assembly ignores failed diagnostic clips and merges successful clips"
+      ]
+    },
+    {
+      "name": "dual-worker-parallel-candidate-generation",
+      "workers": [
+        "worker-a.example.invalid",
+        "worker-b.example.invalid"
+      ],
+      "input_resolution": [256, 256],
+      "output_resolution": [512, 512],
+      "frames_per_candidate": 49,
+      "duration_seconds": 2.041667,
+      "result": "passed",
+      "observations": [
+        "Both 24 GB workers claimed and completed independent candidates concurrently",
+        "The two seeds produced meaningfully different compositions",
+        "These two-second outputs validate scheduling and diversity only, not delivery quality"
+      ]
+    },
+    {
+      "name": "matched-five-second-gguf-final-acceptance",
+      "seed": 230730,
+      "profile": "quality-final-gguf-4x3",
+      "model_loader": "UnetLoaderGGUF",
+      "model": "ltx-2.3-22b-distilled-1.1-Q4_K_M.gguf",
+      "input_resolution": [640, 360],
+      "nominal_output_resolution": [1280, 720],
+      "actual_encoded_resolution": [1280, 704],
+      "frames": 121,
+      "fps": 24,
+      "video_duration_seconds": 5.041667,
+      "audio_duration_seconds": 5.041,
+      "elapsed_seconds": 230.688,
+      "motion_steps": 4,
+      "upscale_steps": 3,
+      "technical_qc": {
+        "valid": true,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "black_seconds": 0,
+        "frozen_segments": 0
+      },
+      "creative_score": 56,
+      "creative_gate": "rejected",
+      "result": "technical_pass_creative_retake_required",
+      "observations": [
+        "The primary drone identity and rigid geometry remain readable across the full five seconds",
+        "The requested red floor scan is absent and the forward motion/camera instruction reads too weakly",
+        "The subject-aware judge correctly refused automatic selection despite clean technical QC",
+        "The current SaveVideo path encodes 640x360 nominal 2x output at 1280x704; final assembly normalizes delivery to the exact platform canvas"
+      ]
+    }
+  ]
+}

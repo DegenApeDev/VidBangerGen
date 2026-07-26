@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vidbangergen"
+version = "0.1.0"
+description = "Local-first LTX 2.3 video production studio"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+keywords = ["comfyui", "ltx-video", "video-generation", "creative-tools"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Web Environment",
+  "Framework :: FastAPI",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Multimedia :: Video",
+]
+dependencies = [
+  "fastapi>=0.116,<1",
+  "httpx>=0.28,<1",
+  "python-multipart>=0.0.20,<1",
+  "pydantic>=2.11,<3",
+  "python-dotenv>=1.0,<2",
+  "uvicorn[standard]>=0.35,<1",
+  "websockets>=15,<17",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<10",
+  "pytest-asyncio>=0.25,<2",
+]
+
+[project.scripts]
+vbg = "apps.api.setup_wizard:main"
+
+[project.urls]
+Homepage = "https://github.com/DegenApeDev/VidBangerGen"
+Repository = "https://github.com/DegenApeDev/VidBangerGen"
+Issues = "https://github.com/DegenApeDev/VidBangerGen/issues"
+
+[tool.setuptools.packages.find]
+include = ["apps*"]
+
+[tool.setuptools.package-data]
+"apps.api" = ["workflows/*.json"]
+"apps.web" = ["dist/index.html", "dist/assets/*"]

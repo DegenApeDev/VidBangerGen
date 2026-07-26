@@ -1,0 +1,17 @@
+[Unit]
+Description=VidBangerGen API and workers
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vidbangergen
+Group=vidbangergen
+WorkingDirectory=/opt/vidbangergen
+EnvironmentFile=-/etc/vidbangergen/vidbangergen.env
+ExecStart=/opt/vidbangergen/.venv/bin/uvicorn apps.api.main:app --host 127.0.0.1 --port 8090
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

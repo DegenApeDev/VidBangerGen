@@ -1,0 +1,16 @@
+[Unit]
+Description=VidBangerGen web interface
+After=vidbangergen-api.service
+Wants=vidbangergen-api.service
+
+[Service]
+Type=simple
+User=vidbangergen
+Group=vidbangergen
+WorkingDirectory=/opt/vidbangergen
+ExecStart=/usr/bin/npm --prefix apps/web run preview -- --host 127.0.0.1 --port 5173
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
