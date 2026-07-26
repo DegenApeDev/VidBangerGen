@@ -606,6 +606,7 @@ def merge_upscale_chunks(
         "duration_seconds": round(probe_duration(destination), 3),
         "overlap_seconds": normalised,
         "source_audio_restored": audio["source_audio_restored"],
+        "video_frames_preserved": audio["video_frames_preserved"],
         "video_codec": "libx264", "video_crf": 14,
     }
 
@@ -620,7 +621,13 @@ def restore_source_audio(
     has_audio = "audio" in probe_stream_types(source)
     if not has_audio:
         video_only.replace(destination)
-        return {"source_audio_restored": False, "audio_codec": None}
+        return {
+            "source_audio_restored": False,
+            "video_frames_preserved": True,
+            "audio_codec": None,
+        }
+    expected_frames = int(probe_video_info(video_only)["frames"])
+    video_duration = probe_duration(video_only)
     base_command = [
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
         "-i", str(video_only), "-i", str(source),
@@ -628,7 +635,7 @@ def restore_source_audio(
     ]
     muxed = subprocess.run(
         [
-            *base_command, "-c:a", "copy", "-shortest",
+            *base_command, "-c:a", "copy", "-t", f"{video_duration:.9f}",
             "-movflags", "+faststart", str(destination),
         ],
         capture_output=True, timeout=600,
@@ -639,7 +646,8 @@ def restore_source_audio(
         muxed = subprocess.run(
             [
                 *base_command, "-c:a", "aac", "-b:a", "256k", "-ar", "48000",
-                "-shortest", "-movflags", "+faststart", str(destination),
+                "-t", f"{video_duration:.9f}", "-movflags", "+faststart",
+                str(destination),
             ],
             capture_output=True, timeout=600,
         )
@@ -650,9 +658,17 @@ def restore_source_audio(
             "Unable to restore source audio after Pixel Spatial render: "
             + muxed.stderr.decode(errors="replace")[:800]
         )
+    output_frames = int(probe_video_info(destination)["frames"])
+    if output_frames != expected_frames:
+        destination.unlink(missing_ok=True)
+        raise RuntimeError(
+            "Source-audio restoration changed the Pixel Spatial frame count "
+            f"from {expected_frames} to {output_frames}"
+        )
     video_only.unlink(missing_ok=True)
     return {
         "source_audio_restored": True,
+        "video_frames_preserved": True,
         "audio_codec": "source-copy" if preservation == "bitstream-copy" else "aac",
         "audio_preservation": preservation,
         **({"audio_bitrate": "256k"} if preservation != "bitstream-copy" else {}),

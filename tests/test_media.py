@@ -164,6 +164,7 @@ def test_long_pixel_upscale_is_chunked_blended_and_restores_audio(tmp_path):
     )
     assert destination.exists()
     assert result["source_audio_restored"] is True
+    assert result["video_frames_preserved"] is True
     assert "audio" in probe_stream_types(destination)
     assert 192 <= probe_video_info(destination)["frames"] <= 194
     assert 8.0 <= probe_duration(destination) <= 8.1
