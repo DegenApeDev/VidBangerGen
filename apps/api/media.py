@@ -1087,6 +1087,7 @@ def render_timeline(
             "-filter_complex", filter_complex, "-map", "[vout]", "-map", "[aout]",
             "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-c:a", "aac",
             "-b:a", "256k", "-ar", "48000", "-movflags", "+faststart", "-shortest",
+            "-t", f"{timeline_duration:.9f}",
             str(destination),
         ],
         capture_output=True,
