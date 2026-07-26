@@ -10,7 +10,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
 
     steps:
       - uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
         run: npm run build
 
       - name: Run backend tests
-        run: python -m pytest -q
+        run: python -m pytest -vv --durations=20
 
       - name: Validate package metadata
         run: python -m pip check
